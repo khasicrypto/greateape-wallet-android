@@ -14,6 +14,16 @@ import com.alphawallet.app.router.HelpRouter;
 import com.alphawallet.app.widget.SettingsItemView;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+
+import com.amazonaws.services.s3.sample.auth.AWS4SignerBase;
+import com.amazonaws.services.s3.sample.auth.AWS4SignerForAuthorizationHeader;
+import com.amazonaws.services.s3.sample.util.BinaryUtils;
+import com.amazonaws.services.s3.sample.util.HttpUtils;
+
 public class SupportSettingsActivity extends BaseActivity {
 
     private LinearLayout supportSettingsLayout;
@@ -24,6 +34,7 @@ public class SupportSettingsActivity extends BaseActivity {
     private SettingsItemView facebook;
     private SettingsItemView blog;
     private SettingsItemView faq;
+    private SettingsItemView xml;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -74,6 +85,12 @@ public class SupportSettingsActivity extends BaseActivity {
                 .withTitle(R.string.title_faq)
                 .withListener(this::onFaqClicked)
                 .build();
+
+        xml = new SettingsItemView.Builder(this)
+                .withIcon(R.drawable.ic_settings_tokenscript)
+                .withTitle(R.string.title_xml)
+                .withListener(this::onXmlClicked)
+                .build();
     }
 
     private void addSettingsToLayout() {
@@ -94,6 +111,7 @@ public class SupportSettingsActivity extends BaseActivity {
             supportSettingsLayout.addView(blog);
         }
         supportSettingsLayout.addView(faq);
+        supportSettingsLayout.addView(xml);
     }
 
     private void onTelegramClicked() {
@@ -180,6 +198,40 @@ public class SupportSettingsActivity extends BaseActivity {
 
     private void onFaqClicked() {
         new HelpRouter().open(this);
+    }
+
+    private void onXmlClicked() {
+        String objectContent = "{\"jsonrpc\": \"2.0\", \"method\": \"web3_clientVersion\", \"params\": [], \"id\": 67}";
+        URL endpointUrl;
+        try {
+            endpointUrl = new URL("https://nd-4vmk4h4mczby7hics5pkg6c6xy.ethereum.managedblockchain.us-east-1.amazonaws.com");
+        } catch (MalformedURLException e) {
+            throw new RuntimeException("Unable to parse service endpoint: " + e.getMessage());
+        }
+        byte[] contentHash = AWS4SignerBase.hash(objectContent);
+        String contentHashString = BinaryUtils.toHex(contentHash);
+
+        Map<String, String> headers = new HashMap<String, String>();
+        headers.put("x-amz-content-sha256", contentHashString);
+        headers.put("content-length", "" + objectContent.length());
+        headers.put("x-amz-storage-class", "REDUCED_REDUNDANCY");
+
+        AWS4SignerForAuthorizationHeader signer = new AWS4SignerForAuthorizationHeader(
+                endpointUrl, "PUT", "managedblockchain", "us-east-1");
+        String authorization = signer.computeSignature(headers,
+                null, // no query parameters
+                contentHashString,
+                "",
+                "");
+
+        // express authorization for this as a header
+        headers.put("Authorization", authorization);
+
+        // make the call to Amazon S3
+        String response = HttpUtils.invokeHttpRequest(endpointUrl, "PUT", headers, objectContent);
+        System.out.println("--------- Response content ---------");
+        System.out.println(response);
+        System.out.println("------------------------------------");
     }
 
     private boolean isAppAvailable(String packageName) {

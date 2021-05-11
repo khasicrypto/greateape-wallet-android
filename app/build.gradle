@@ -206,6 +206,10 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
 
     implementation 'com.github.salomonbrys.kotson:kotson:2.5.0'
+
+    // AWS SDK
+    //implementation 'com.amazonaws:aws-java-sdk-bom:1.11.X'
+    //implementation 'com.amazonaws:aws-java-sdk-code-generator'
 }
 
 // WARNING WARNING WARNING
