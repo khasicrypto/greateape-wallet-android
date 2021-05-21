@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.com/James-Sangalli/alpha-wallet.svg?token=J2hT1s5bGKT1npuPugWb&branch=master)](https://travis-ci.com/James-Sangalli/alpha-wallet.svg?token=J2hT1s5bGKT1npuPugWb&branch=master)
 [![License](https://img.shields.io/badge/license-GPL3-green.svg?style=flat)](https://github.com/fastlane/fastlane/blob/master/LICENSE)
 
-[<img src=https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png height="88">](https://play.google.com/store/apps/details?id=com.wallet.crypto.trustapp)
+
 
 ## Cloning the repo
 
